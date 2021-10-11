@@ -2,6 +2,7 @@ package com.cnu.spg.board.repository;
 
 import com.cnu.spg.board.domain.Board;
 import com.cnu.spg.board.dto.condition.BoardSearchCondition;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.cnu.spg.board.domain.QBoard.board;
+import static com.cnu.spg.utils.QuerydslOrderByUtils.getOrderSpecifier;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,7 +38,6 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
         return writerName == null ? null : board.writerName.eq(writerName);
     }
 
-
     @Override
     public List<Long> findIdsFromPaginationWithKeyword(BoardSearchCondition boardSearchCondition, Pageable pageable) {
         return queryFactory
@@ -47,7 +48,8 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
                         likeContent(boardSearchCondition.getContentPart()),
                         likeTitle(boardSearchCondition.getTitlePart())
                 )
-                .orderBy(board.id.desc())
+                .orderBy(getOrderSpecifier(pageable.getSort(), Board.class, "board")
+                        .toArray(OrderSpecifier[]::new))
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .fetch();

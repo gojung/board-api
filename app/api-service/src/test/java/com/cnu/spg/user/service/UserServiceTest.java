@@ -239,4 +239,15 @@ class UserServiceTest {
         assertEquals("john", userInfoResponseDto.getName());
         assertEquals(1, userInfoResponseDto.getRoles().size());
     }
+
+    @Test
+    @DisplayName("userId에 매칭되는 user가 없을 경우")
+    void searchNotExistUserExceptionTest() throws Exception {
+        // given
+
+        // when
+
+        // then
+        assertThrows(UserNotFoundException.class, () -> userService.searchUserInfo(1L));
+    }
 }

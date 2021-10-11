@@ -24,15 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private static final String LOGIN_URL_PATH = "/v1/login";
-    private static final String HEALTH_CHECK_PATH = "/api/v1/health-check";
-    private static final String[] SWAGGER_PATH = new String[]{
-            "/swagger-ui/**",
-            "/swagger-resources/**",
-            "/v3/api-docs"
-    };
-    private static final String[] H2_CONSOLE_PATH = new String[]{"/h2-console/**", "/h2-console"};
-
     private final UserDetailsService loginDetailService;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
@@ -45,7 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public AuthorizationProcessFilter authorizationProcessFilter() throws Exception {
-        AuthorizationProcessFilter authorizationProcessFilter = new AuthorizationProcessFilter(tokenProvider, authenticationManagerBean(), LOGIN_URL_PATH);
+        AuthorizationProcessFilter authorizationProcessFilter = new AuthorizationProcessFilter(tokenProvider, authenticationManagerBean(), "/v1/login");
         authorizationProcessFilter.setAuthenticationFailureHandler(new AuthFailureHandler());
 
         return authorizationProcessFilter;
@@ -69,15 +60,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         web.ignoring()
-                .antMatchers(H2_CONSOLE_PATH)
-                .antMatchers(SWAGGER_PATH);
+                .antMatchers(
+                        "/h2-console/**",
+                        "/h2-console"
+                )
+                .antMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/v3/api-docs"
+                );
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers(LOGIN_URL_PATH, HEALTH_CHECK_PATH).permitAll()
+                .antMatchers("/v1/login", "/api/v1/users", "/api/v1/health-check").permitAll()
                 .anyRequest().authenticated();
 
         http

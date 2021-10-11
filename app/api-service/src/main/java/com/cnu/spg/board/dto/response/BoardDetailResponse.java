@@ -1,5 +1,6 @@
 package com.cnu.spg.board.dto.response;
 
+import com.cnu.spg.board.dto.BoardCommentDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,5 +21,5 @@ public class BoardDetailResponse {
 
     private String content;
 
-    private List<CommentResponse> comments;
+    private List<BoardCommentDto> comments;
 }

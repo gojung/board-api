@@ -19,7 +19,7 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'org.sonarqube'
 
-    group 'com.cnu.spg'
+    group 'com.cnu'
     version '0.0.1-SNAPSHOT'
     sourceCompatibility = 11
 
@@ -28,12 +28,10 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
         developmentOnly 'org.springframework.boot:spring-boot-devtools'
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
-        testImplementation "com.h2database:h2"
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
@@ -50,19 +48,6 @@ subprojects {
             exceptionFormat "full"
         }
         finalizedBy 'jacocoTestReport'
-    }
-
-    sonarqube {
-        properties {
-            property "sonar.host.url", "http://localhost:9090"
-            property "sonar.login", "910b5a218ab0fe14c43f5d46dc372739e581766e"
-            property "sonar.sources", "src"
-            property "sonar.language", "java"
-            property "sonar.sourceEncoding", "UTF-8"
-            property "sonar.test.inclusions", "**/*Test.java"
-            property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-            property "sonar.tests", "src/test/java"
-        }
     }
 
     jacoco {
@@ -92,6 +77,20 @@ subprojects {
                                   '**/ApiServiceApplication*',
                                   '**/DummyData*'] + Qdomains)
             }))
+        }
+    }
+
+    sonarqube {
+        properties {
+            property "sonar.host.url", "http://localhost:9090"
+            property "sonar.login", "910b5a218ab0fe14c43f5d46dc372739e581766e"
+            property "sonar.sources", "src"
+            property "sonar.tests", "src/test/java"
+            property "sonar.language", "java"
+            property "sonar.sourceEncoding", "UTF-8"
+            property "sonar.test.inclusions", "**/*Test.java"
+            property "sonar.exclusions", "**/*Test*.*, **/Q*.JAVA"
+            property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
         }
     }
 }

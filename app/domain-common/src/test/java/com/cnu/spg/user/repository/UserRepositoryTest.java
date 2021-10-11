@@ -1,7 +1,7 @@
 package com.cnu.spg.user.repository;
 
 import com.cnu.spg.user.domain.User;
-import org.junit.jupiter.api.BeforeEach;
+import com.cnu.spg.user.exception.UserParamterOmittedException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,25 +21,15 @@ class UserRepositoryTest {
     @Autowired
     EntityManager em;
 
-    private static final String name = "kkh";
-    private static final String username = "kkh@gmail.com";
-    private static final String password = "password";
-
-
-    @BeforeEach
-    void beforeUserTest() {
-        User user = User.createUser(name, username, password);
-
-        em.persist(user);
-
-        em.flush();
-        em.clear();
-    }
-
     @Test
     void findByCorrectUsernameTest() {
         // given
-        final String findedUsername = username;
+        User user = User.createUser("kkh", "kkh@gmail.com", "password");
+        em.persist(user);
+        em.flush();
+        em.clear();
+
+        final String findedUsername = "kkh@gmail.com";
 
         // when
         User findedUser = userRepository.findByUsername(findedUsername)
@@ -47,8 +37,8 @@ class UserRepositoryTest {
 
         // then
         assertEquals(findedUsername, findedUser.getUsername());
-        assertEquals(password, findedUser.getPassword());
-        assertEquals(name, findedUser.getName());
+        assertEquals("password", findedUser.getPassword());
+        assertEquals("kkh", findedUser.getName());
     }
 
     @Test
@@ -66,10 +56,14 @@ class UserRepositoryTest {
     @Test
     void deleteByUsername() throws Exception {
         // given
+        User user = User.createUser("kkh", "kkh@gmail.com", "password");
+        em.persist(user);
+        em.flush();
+        em.clear();
 
         // when
-        userRepository.deleteByUsername(username);
-        Optional<User> findUser = userRepository.findByUsername(username);
+        userRepository.deleteByUsername("kkh@gmail.com");
+        Optional<User> findUser = userRepository.findByUsername("kkh@gmail.com");
 
         // then
         assertThrows(RuntimeException.class, () -> findUser.orElseThrow(() -> new RuntimeException("not found")));
@@ -90,11 +84,26 @@ class UserRepositoryTest {
     @Test
     void isExistUsernameTest() throws Exception {
         // given
+        User user = User.createUser("kkh", "kkh@gmail.com", "password");
+        em.persist(user);
+        em.flush();
+        em.clear();
 
         // when
-        boolean result = userRepository.existsByUsername(username);
+        boolean result = userRepository.existsByUsername("kkh@gmail.com");
 
         // then
         assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("username이 null인 경우 예외 케이스")
+    void usernameIsNullExistTest() throws Exception {
+        // given
+
+        // when
+
+        // then
+        assertThrows(UserParamterOmittedException.class, () -> userRepository.existsByUsername(null));
     }
 }

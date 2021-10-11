@@ -1,5 +1,6 @@
 package com.cnu.spg.user.repository;
 
+import com.cnu.spg.user.exception.UserParamterOmittedException;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,10 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    private BooleanExpression eqUsername(String username) {
-        if (username == null) return null;
+    private BooleanExpression eqUsernameMustHave(String username) {
+        if (username == null) {
+            throw new UserParamterOmittedException();
+        }
 
         return user.username.eq(username);
     }
@@ -24,7 +27,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         Integer fetchFirst = queryFactory.
                 selectOne()
                 .from(user)
-                .where(eqUsername(username))
+                .where(eqUsernameMustHave(username))
                 .fetchFirst();
 
         return fetchFirst != null;

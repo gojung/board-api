@@ -33,7 +33,7 @@ public class UserService {
         }
 
         Role unAuthUserRole = roleRepository.findByName(RoleName.ROLE_UNAUTH)
-                .orElseThrow(RoleNotFoundException::new);
+                .orElseThrow(() -> new RoleNotFoundException("회원 가입에 필요한 기본 권한 정보가 없습니다."));
 
         String encrytPassword = passwordEncoder.encode(userRegisterDto.getMatchingPassword());
         User user = User.createUser(userRegisterDto.getName(), userRegisterDto.getUserName(), encrytPassword, unAuthUserRole);

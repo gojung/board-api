@@ -8,4 +8,8 @@ public class RoleNotFoundException extends NotFoundException {
     public RoleNotFoundException() {
         super(ROLE_NOT_FOUND_EXCEPTION_MSG);
     }
+
+    public RoleNotFoundException(String msg) {
+        super(msg);
+    }
 }

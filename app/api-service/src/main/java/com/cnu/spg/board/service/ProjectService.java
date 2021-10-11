@@ -4,9 +4,9 @@ import com.cnu.spg.board.domain.Board;
 import com.cnu.spg.board.domain.project.ProjectCategory;
 import com.cnu.spg.board.dto.condition.ProjectBoardCondition;
 import com.cnu.spg.board.dto.reponse.CommentCountsWithBoardIdDto;
-import com.cnu.spg.board.dto.response.BoardResponse;
+import com.cnu.spg.board.dto.BoardDto;
 import com.cnu.spg.board.dto.response.CategoriesResponse;
-import com.cnu.spg.board.dto.response.ProjectCategoryElement;
+import com.cnu.spg.board.dto.ProjectCategoryDto;
 import com.cnu.spg.board.exception.CategoryNotFoundException;
 import com.cnu.spg.board.repository.BoardRepository;
 import com.cnu.spg.board.repository.CommentRepository;
@@ -48,32 +48,32 @@ public class ProjectService {
         return new CategoriesResponse(createTreeCategories(parentsCategories, parentsMappedCategoriesCache));
     }
 
-    private List<ProjectCategoryElement> createTreeCategories(List<ProjectCategory> parentsCategories, Map<Long, List<ProjectCategory>> parentsMappedCategoriesCache) {
+    private List<ProjectCategoryDto> createTreeCategories(List<ProjectCategory> parentsCategories, Map<Long, List<ProjectCategory>> parentsMappedCategoriesCache) {
         Queue<ProjectCategory> projectCategoryQueue = new LinkedList<>();
-        List<ProjectCategoryElement> projectCategoryElements = new ArrayList<>();
-        Map<Long, ProjectCategoryElement> parentCache = new HashMap<>();
+        List<ProjectCategoryDto> projectCategoryDtos = new ArrayList<>();
+        Map<Long, ProjectCategoryDto> parentCache = new HashMap<>();
 
         for (ProjectCategory parent : parentsCategories) {
-            ProjectCategoryElement projectCategoryElement = new ProjectCategoryElement(parent.getId(), parent.getCategoryName(), new ArrayList<>());
+            ProjectCategoryDto projectCategoryDto = new ProjectCategoryDto(parent.getId(), parent.getCategoryName(), new ArrayList<>());
             projectCategoryQueue.add(parent);
-            projectCategoryElements.add(projectCategoryElement);
-            parentCache.put(projectCategoryElement.getCategoryId(), projectCategoryElement);
+            projectCategoryDtos.add(projectCategoryDto);
+            parentCache.put(projectCategoryDto.getCategoryId(), projectCategoryDto);
         }
 
         while (!projectCategoryQueue.isEmpty()) {
             ProjectCategory parent = projectCategoryQueue.poll();
-            ProjectCategoryElement parentDto = parentCache.get(parent.getId());
+            ProjectCategoryDto parentDto = parentCache.get(parent.getId());
             List<ProjectCategory> children = parentsMappedCategoriesCache.getOrDefault(parent.getId(), new ArrayList<>());
 
             for (ProjectCategory child : children) {
-                ProjectCategoryElement projectCategoryElement = new ProjectCategoryElement(child.getId(), child.getCategoryName(), new ArrayList<>());
+                ProjectCategoryDto projectCategoryDto = new ProjectCategoryDto(child.getId(), child.getCategoryName(), new ArrayList<>());
                 projectCategoryQueue.add(child);
-                parentDto.getChildren().add(projectCategoryElement);
-                parentCache.put(projectCategoryElement.getCategoryId(), projectCategoryElement);
+                parentDto.getChildren().add(projectCategoryDto);
+                parentCache.put(projectCategoryDto.getCategoryId(), projectCategoryDto);
             }
         }
 
-        return projectCategoryElements;
+        return projectCategoryDtos;
     }
 
     @Transactional
@@ -95,7 +95,7 @@ public class ProjectService {
         return savedCategory.getId();
     }
 
-    public Page<BoardResponse> findProjectBoardsOnePage(ProjectBoardCondition projectBoardCondition, Pageable pageable, Long categoryId) {
+    public Page<BoardDto> findProjectBoardsOnePage(ProjectBoardCondition projectBoardCondition, Pageable pageable, Long categoryId) {
         ProjectCategory category = projectCategoryRepository.findById(categoryId)
                 .orElseThrow(CategoryNotFoundException::new);
         List<Long> ids = boardRepository.findProjectBoardIdsFromPaginationWithKeyword(projectBoardCondition, category, pageable);
@@ -107,9 +107,9 @@ public class ProjectService {
 
         Page<Board> pageDataFromBoardByIds = boardRepository.findProjectPageDataFromBoardByIds(ids, projectBoardCondition, category, pageable);
 
-        List<BoardResponse> boardResponses = pageDataFromBoardByIds
+        List<BoardDto> boardRespons = pageDataFromBoardByIds
                 .getContent().stream()
-                .map(board -> BoardResponse.builder()
+                .map(board -> BoardDto.builder()
                         .id(board.getId())
                         .title(board.getTitle())
                         .content(board.getContent())
@@ -119,7 +119,7 @@ public class ProjectService {
                         .build()
                 ).collect(Collectors.toList());
 
-        return new PageImpl<>(boardResponses, pageable, pageDataFromBoardByIds.getTotalElements());
+        return new PageImpl<>(boardRespons, pageable, pageDataFromBoardByIds.getTotalElements());
     }
 
     private long commentCountFromCommentDto(CommentCountsWithBoardIdDto commentCountsWithBoardIdDto) {

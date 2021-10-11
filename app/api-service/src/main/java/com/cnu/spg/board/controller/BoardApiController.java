@@ -3,12 +3,13 @@ package com.cnu.spg.board.controller;
 import com.cnu.spg.board.domain.BoardType;
 import com.cnu.spg.board.dto.condition.BoardSearchCondition;
 import com.cnu.spg.board.dto.condition.ProjectBoardCondition;
-import com.cnu.spg.board.dto.request.BoardsRequset;
 import com.cnu.spg.board.dto.request.BoardTypeRequset;
+import com.cnu.spg.board.dto.request.BoardsRequset;
 import com.cnu.spg.board.dto.request.ProjectCategoryRequestDto;
 import com.cnu.spg.board.dto.response.BoardDetailResponse;
-import com.cnu.spg.board.dto.response.BoardResponse;
+import com.cnu.spg.board.dto.BoardDto;
 import com.cnu.spg.board.dto.response.CategoriesResponse;
+import com.cnu.spg.board.exception.BoardTypeNotMatchException;
 import com.cnu.spg.board.exception.NotExistBoardTypeException;
 import com.cnu.spg.board.service.BoardAllService;
 import com.cnu.spg.board.service.ProjectService;
@@ -20,8 +21,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -44,8 +46,8 @@ public class BoardApiController {
             @ApiImplicitParam(name = "elementSize", value = "each page element number", required = true, paramType = "query")
     })
     @GetMapping("/api/v1/boards")
-    public ResponseEntity<Page<BoardResponse>> getBoards(@Valid BoardsRequset boardsRequset) {
-        Pageable pageable = PageRequest.of(boardsRequset.getPageNum(), boardsRequset.getElementSize());
+    public ResponseEntity<Page<BoardDto>> getBoards(@Valid BoardsRequset boardsRequset,
+                                                    @PageableDefault(sort = "id", direction = Sort.Direction.DESC, size = 20) Pageable pageable) {
         BoardSearchCondition boardSearchCondition = new BoardSearchCondition(boardsRequset.getPartTitle(), boardsRequset.getWriterName(), boardsRequset.getPartOfContent());
 
         return ResponseEntity.ok().body(boardAllService.findBoardsOnePage(boardSearchCondition, pageable));
@@ -53,17 +55,17 @@ public class BoardApiController {
 
     @ApiOperation("[권한] board type에 따른 정보 조회")
     @GetMapping("/api/v1/boards/{boardType}")
-    public ResponseEntity<Page<BoardResponse>> findBoardByType(@PathVariable String boardType, @Valid BoardTypeRequset boardsRequset) {
+    public ResponseEntity<Page<BoardDto>> findBoardByType(@PathVariable String boardType, @Valid BoardTypeRequset boardsRequset,
+                                                          @PageableDefault(sort = "id", direction = Sort.Direction.DESC, size = 20) Pageable pageable) {
         BoardType boardTypeEnum = BoardType.findBoardTypeByKey(boardType)
                 .orElseThrow(NotExistBoardTypeException::new);
 
-        Pageable pageable = PageRequest.of(boardsRequset.getPageNum(), boardsRequset.getElementSize());
         ProjectBoardCondition projectBoardCondition = new ProjectBoardCondition(boardsRequset.getPartOfContent(), boardsRequset.getWriterName(), boardsRequset.getPartOfContent());
         if (boardTypeEnum == BoardType.PROJECT) {
             return ResponseEntity.ok().body(projectService.findProjectBoardsOnePage(projectBoardCondition, pageable, boardsRequset.getCategoryId()));
         }
 
-        throw new IllegalArgumentException();
+        throw new BoardTypeNotMatchException();
     }
 
 
