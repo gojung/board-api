@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
 })
 @Getter
 @Setter
-public class UserRegisterDto {
+public class UserRegisterRequest {
     @NotNull(message = "is required")
     @Size(min = 1, message = "is required")
     private String userName;
@@ -30,11 +30,11 @@ public class UserRegisterDto {
     @Size(min = 1, message = "is required")
     private String name;
 
-    public UserRegisterDto() {
+    public UserRegisterRequest() {
     }
 
     @Builder
-    public UserRegisterDto(String userName, String password, String matchingPassword, String name) {
+    public UserRegisterRequest(String userName, String password, String matchingPassword, String name) {
         this.userName = userName;
         this.password = password;
         this.matchingPassword = matchingPassword;

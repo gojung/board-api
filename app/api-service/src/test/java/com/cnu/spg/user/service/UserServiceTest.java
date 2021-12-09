@@ -3,9 +3,9 @@ package com.cnu.spg.user.service;
 import com.cnu.spg.user.domain.Role;
 import com.cnu.spg.user.domain.RoleName;
 import com.cnu.spg.user.domain.User;
-import com.cnu.spg.user.dto.requset.UserPasswordChangingDto;
-import com.cnu.spg.user.dto.requset.UserRegisterDto;
-import com.cnu.spg.user.dto.response.UserInfoResponseDto;
+import com.cnu.spg.user.dto.requset.UserPwChangingRequest;
+import com.cnu.spg.user.dto.requset.UserRegisterRequest;
+import com.cnu.spg.user.dto.response.UserInfoResponse;
 import com.cnu.spg.user.exception.PasswordNotMatchException;
 import com.cnu.spg.user.exception.UserNotFoundException;
 import com.cnu.spg.user.exception.UsernameAlreadyExistException;
@@ -41,7 +41,7 @@ class UserServiceTest {
         // givne
         Role unauth = new Role(RoleName.ROLE_UNAUTH);
         roleRepository.save(unauth);
-        UserRegisterDto userRegisterDto = UserRegisterDto.builder()
+        UserRegisterRequest userRegisterRequest = UserRegisterRequest.builder()
                 .userName("newuser@gmail.com")
                 .name("name")
                 .password("Password123!")
@@ -49,7 +49,7 @@ class UserServiceTest {
                 .build();
 
         // when
-        Long userId = userService.regiesterUser(userRegisterDto);
+        Long userId = userService.regiesterUser(userRegisterRequest);
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
@@ -71,7 +71,7 @@ class UserServiceTest {
         userRepository.save(john);
 
         // when
-        UserRegisterDto userRegisterDto = UserRegisterDto.builder()
+        UserRegisterRequest userRegisterRequest = UserRegisterRequest.builder()
                 .userName("john@gmail.com")
                 .name("name")
                 .password("NewPassword!1")
@@ -79,7 +79,7 @@ class UserServiceTest {
                 .build();
 
         // then
-        Assertions.assertThrows(UsernameAlreadyExistException.class, () -> userService.regiesterUser(userRegisterDto));
+        Assertions.assertThrows(UsernameAlreadyExistException.class, () -> userService.regiesterUser(userRegisterRequest));
     }
 
     @Test
@@ -151,8 +151,8 @@ class UserServiceTest {
         userRepository.save(john);
 
         // when
-        UserPasswordChangingDto passwordChangingDto =
-                new UserPasswordChangingDto("Abc123!", "Newpassword1!", "Newpassword1!");
+        UserPwChangingRequest passwordChangingDto =
+                new UserPwChangingRequest("Abc123!", "Newpassword1!", "Newpassword1!");
         User user = userService.changeUserPassword("john@gmail.com", passwordChangingDto);
 
         // then
@@ -172,7 +172,7 @@ class UserServiceTest {
         userRepository.save(john);
 
         // when
-        UserPasswordChangingDto passwordChangingDto = new UserPasswordChangingDto("NotMatchedPassword1!", "Newpassword1!", "Newpassword1!");
+        UserPwChangingRequest passwordChangingDto = new UserPwChangingRequest("NotMatchedPassword1!", "Newpassword1!", "Newpassword1!");
 
         // then
         assertThrows(PasswordNotMatchException.class, () -> userService.changeUserPassword("john@gmail.com", passwordChangingDto));
@@ -183,7 +183,7 @@ class UserServiceTest {
         // given
 
         // when
-        UserPasswordChangingDto passwordChangingDto = new UserPasswordChangingDto("Abc123!", "Newpassword1!", "Newpassword1!");
+        UserPwChangingRequest passwordChangingDto = new UserPwChangingRequest("Abc123!", "Newpassword1!", "Newpassword1!");
 
         // then
         assertThrows(UserNotFoundException.class, () -> userService.changeUserPassword("notExistuseranme", passwordChangingDto));
@@ -199,7 +199,7 @@ class UserServiceTest {
         User saveUser = userRepository.save(john);
 
         // when
-        UserPasswordChangingDto passwordChangingDto = new UserPasswordChangingDto("Abc123!", "NewPassword12!@", "NewPassword12!@");
+        UserPwChangingRequest passwordChangingDto = new UserPwChangingRequest("Abc123!", "NewPassword12!@", "NewPassword12!@");
         userService.changeUserPassword(saveUser.getId(), passwordChangingDto);
         User changedUser = userService.findByUserName("john@gmail.com");
 
@@ -218,7 +218,7 @@ class UserServiceTest {
         Long id = savedUser.getId();
 
         // when
-        UserPasswordChangingDto passwordChangingDto = new UserPasswordChangingDto("notConfirmA!@1", "NewPassword12!@", "NewPassword12!@");
+        UserPwChangingRequest passwordChangingDto = new UserPwChangingRequest("notConfirmA!@1", "NewPassword12!@", "NewPassword12!@");
 
         // then
         assertThrows(PasswordNotMatchException.class, () -> userService.changeUserPassword(id, passwordChangingDto));
@@ -233,11 +233,11 @@ class UserServiceTest {
         User savedUser = userRepository.save(john);
 
         // when
-        UserInfoResponseDto userInfoResponseDto = userService.searchUserInfo(savedUser.getId());
+        UserInfoResponse userInfoResponse = userService.searchUserInfo(savedUser.getId());
 
         // then
-        assertEquals("john", userInfoResponseDto.getName());
-        assertEquals(1, userInfoResponseDto.getRoles().size());
+        assertEquals("john", userInfoResponse.getName());
+        assertEquals(1, userInfoResponse.getRoles().size());
     }
 
     @Test

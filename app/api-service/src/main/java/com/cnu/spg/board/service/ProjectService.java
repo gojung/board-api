@@ -2,11 +2,11 @@ package com.cnu.spg.board.service;
 
 import com.cnu.spg.board.domain.Board;
 import com.cnu.spg.board.domain.project.ProjectCategory;
-import com.cnu.spg.board.dto.condition.ProjectBoardCondition;
-import com.cnu.spg.board.dto.reponse.CommentCountsWithBoardIdDto;
 import com.cnu.spg.board.dto.BoardDto;
-import com.cnu.spg.board.dto.response.CategoriesResponse;
 import com.cnu.spg.board.dto.ProjectCategoryDto;
+import com.cnu.spg.board.dto.condition.ProjectBoardCondition;
+import com.cnu.spg.board.dto.projection.BoardCommentCountProjection;
+import com.cnu.spg.board.dto.response.CategoriesResponse;
 import com.cnu.spg.board.exception.CategoryNotFoundException;
 import com.cnu.spg.board.repository.BoardRepository;
 import com.cnu.spg.board.repository.CommentRepository;
@@ -99,11 +99,11 @@ public class ProjectService {
         ProjectCategory category = projectCategoryRepository.findById(categoryId)
                 .orElseThrow(CategoryNotFoundException::new);
         List<Long> ids = boardRepository.findProjectBoardIdsFromPaginationWithKeyword(projectBoardCondition, category, pageable);
-        List<CommentCountsWithBoardIdDto> countListAndBoardIdBulk = commentRepository.findCountListAndBoardIdBulk(ids);
+        List<BoardCommentCountProjection> countListAndBoardIdBulk = commentRepository.findCountListAndBoardIdBulk(ids);
 
-        Map<Long, CommentCountsWithBoardIdDto> boardIdWithCommentNumber = countListAndBoardIdBulk
+        Map<Long, BoardCommentCountProjection> boardIdWithCommentNumber = countListAndBoardIdBulk
                 .stream()
-                .collect(Collectors.toMap(CommentCountsWithBoardIdDto::getBoardId, Function.identity()));
+                .collect(Collectors.toMap(BoardCommentCountProjection::getId, Function.identity()));
 
         Page<Board> pageDataFromBoardByIds = boardRepository.findProjectPageDataFromBoardByIds(ids, projectBoardCondition, category, pageable);
 
@@ -122,9 +122,9 @@ public class ProjectService {
         return new PageImpl<>(boardRespons, pageable, pageDataFromBoardByIds.getTotalElements());
     }
 
-    private long commentCountFromCommentDto(CommentCountsWithBoardIdDto commentCountsWithBoardIdDto) {
-        if (commentCountsWithBoardIdDto == null) return 0L;
+    private long commentCountFromCommentDto(BoardCommentCountProjection boardCommentCountProjection) {
+        if (boardCommentCountProjection == null) return 0L;
 
-        return commentCountsWithBoardIdDto.getNumberOfComments();
+        return boardCommentCountProjection.getNumberOfComments();
     }
 }

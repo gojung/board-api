@@ -1,5 +1,6 @@
 package com.cnu.spg.board.domain;
 
+import com.cnu.spg.comment.exception.CommentAuthException;
 import com.cnu.spg.domain.BaseEntity;
 import com.cnu.spg.user.domain.User;
 import lombok.AccessLevel;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Getter
 @Entity
@@ -50,5 +52,12 @@ public class Comment extends BaseEntity {
         comment.connectUserWithComment(user);
 
         return comment;
+    }
+
+    public void editContent(Long userId, String newContent) {
+        if (!Objects.equals(user.getId(), userId)) {
+            throw new CommentAuthException();
+        }
+        this.content = newContent;
     }
 }

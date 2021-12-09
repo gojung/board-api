@@ -3,9 +3,9 @@ package com.cnu.spg.user.service;
 import com.cnu.spg.user.domain.Role;
 import com.cnu.spg.user.domain.RoleName;
 import com.cnu.spg.user.domain.User;
-import com.cnu.spg.user.dto.requset.UserPasswordChangingDto;
-import com.cnu.spg.user.dto.requset.UserRegisterDto;
-import com.cnu.spg.user.dto.response.UserInfoResponseDto;
+import com.cnu.spg.user.dto.requset.UserPwChangingRequest;
+import com.cnu.spg.user.dto.requset.UserRegisterRequest;
+import com.cnu.spg.user.dto.response.UserInfoResponse;
 import com.cnu.spg.user.exception.PasswordNotMatchException;
 import com.cnu.spg.user.exception.RoleNotFoundException;
 import com.cnu.spg.user.exception.UserNotFoundException;
@@ -27,16 +27,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Long regiesterUser(UserRegisterDto userRegisterDto) {
-        if (userRepository.existsByUsername(userRegisterDto.getUserName())) {
-            throw new UsernameAlreadyExistException(userRegisterDto.getUserName());
+    public Long regiesterUser(UserRegisterRequest userRegisterRequest) {
+        if (userRepository.existsByUsername(userRegisterRequest.getUserName())) {
+            throw new UsernameAlreadyExistException(userRegisterRequest.getUserName());
         }
 
         Role unAuthUserRole = roleRepository.findByName(RoleName.ROLE_UNAUTH)
                 .orElseThrow(() -> new RoleNotFoundException("회원 가입에 필요한 기본 권한 정보가 없습니다."));
 
-        String encrytPassword = passwordEncoder.encode(userRegisterDto.getMatchingPassword());
-        User user = User.createUser(userRegisterDto.getName(), userRegisterDto.getUserName(), encrytPassword, unAuthUserRole);
+        String encrytPassword = passwordEncoder.encode(userRegisterRequest.getMatchingPassword());
+        User user = User.createUser(userRegisterRequest.getName(), userRegisterRequest.getUserName(), encrytPassword, unAuthUserRole);
 
         return userRepository.save(user).getId();
     }
@@ -61,37 +61,37 @@ public class UserService {
     }
 
     @Transactional
-    public User changeUserPassword(String username, UserPasswordChangingDto userPasswordChangingDto) {
+    public User changeUserPassword(String username, UserPwChangingRequest userPwChangingRequest) {
         User oridinaryUser = userRepository.findByUsername(username)
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!passwordEncoder.matches(userPasswordChangingDto.getBeforePassword()
+        if (!passwordEncoder.matches(userPwChangingRequest.getBeforePassword()
                 , oridinaryUser.getPassword())) {
             throw new PasswordNotMatchException();
         }
-        oridinaryUser.changePassword(passwordEncoder.encode(userPasswordChangingDto.getPassword()));
+        oridinaryUser.changePassword(passwordEncoder.encode(userPwChangingRequest.getPassword()));
 
         return oridinaryUser;
     }
 
     @Transactional
-    public void changeUserPassword(Long userId, UserPasswordChangingDto userPasswordChangingDto) {
+    public void changeUserPassword(Long userId, UserPwChangingRequest userPwChangingRequest) {
         User oridinaryUser = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!passwordEncoder.matches(userPasswordChangingDto.getBeforePassword()
+        if (!passwordEncoder.matches(userPwChangingRequest.getBeforePassword()
                 , oridinaryUser.getPassword())) {
             throw new PasswordNotMatchException();
         }
 
-        oridinaryUser.changePassword(this.passwordEncoder.encode(userPasswordChangingDto.getPassword()));
+        oridinaryUser.changePassword(this.passwordEncoder.encode(userPwChangingRequest.getPassword()));
     }
 
-    public UserInfoResponseDto searchUserInfo(Long userId) {
+    public UserInfoResponse searchUserInfo(Long userId) {
         User findUser = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        return new UserInfoResponseDto(findUser);
+        return new UserInfoResponse(findUser);
     }
 
     public boolean checkNowPassword(User user, String passowrd) {
