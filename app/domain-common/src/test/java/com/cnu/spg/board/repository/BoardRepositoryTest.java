@@ -1,8 +1,10 @@
 package com.cnu.spg.board.repository;
 
-import com.cnu.spg.board.dto.condition.BoardSearchCondition;
 import com.cnu.spg.board.domain.Board;
 import com.cnu.spg.board.domain.project.ProjectBoard;
+import com.cnu.spg.board.domain.project.ProjectCategory;
+import com.cnu.spg.board.dto.condition.BoardSearchCondition;
+import com.cnu.spg.board.repository.project.ProjectCategoryRepository;
 import com.cnu.spg.user.domain.User;
 import com.cnu.spg.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,8 @@ class BoardRepositoryTest {
     BoardRepository boardRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    ProjectCategoryRepository projectCategoryRepository;
 
     private static final String USERNAME_1 = "username1";
     private static final String USERNAME_2 = "username2";
@@ -51,11 +55,21 @@ class BoardRepositoryTest {
         userRepository.save(user1);
         userRepository.save(user2);
 
+        ProjectCategory category1 = projectCategoryRepository.save(ProjectCategory.builder()
+                .user(user1)
+                .categoryName("category1")
+                .build());
+        ProjectCategory category2 = projectCategoryRepository.save(ProjectCategory.builder()
+                .user(user1)
+                .categoryName("category1")
+                .build());
+
         for (int index = 0; index < NUMBER_OF_SOME; index++) {
             Board board = ProjectBoard.builder()
                     .title(TITLE_1_LIKE + index)
                     .content(CONTENT_1_LIKE + index)
                     .user(user1)
+                    .projectCategory(category1)
                     .build();
             boardRepository.save(board);
         }
@@ -65,6 +79,7 @@ class BoardRepositoryTest {
                     .title(TITLE_2_LIKE + index)
                     .content(CONTENT_2_LIKE + index)
                     .user(user2)
+                    .projectCategory(category2)
                     .build();
             boardRepository.save(board);
         }

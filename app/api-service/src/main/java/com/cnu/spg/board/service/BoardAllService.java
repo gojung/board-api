@@ -8,8 +8,9 @@ import com.cnu.spg.board.dto.BoardCommentDto;
 import com.cnu.spg.board.dto.BoardDto;
 import com.cnu.spg.board.dto.ProjectUserReferenceDto;
 import com.cnu.spg.board.dto.condition.BoardSearchCondition;
-import com.cnu.spg.board.dto.reponse.CommentCountsWithBoardIdDto;
-import com.cnu.spg.board.dto.response.*;
+import com.cnu.spg.board.dto.projection.BoardCommentCountProjection;
+import com.cnu.spg.board.dto.response.BoardDetailResponse;
+import com.cnu.spg.board.dto.response.ProjectBoardResponse;
 import com.cnu.spg.board.exception.BoardNotFoundException;
 import com.cnu.spg.board.exception.BoardTypeNotMatchException;
 import com.cnu.spg.board.repository.BoardRepository;
@@ -36,11 +37,11 @@ public class BoardAllService {
 
     public Page<BoardDto> findBoardsOnePage(BoardSearchCondition boardSearchCondition, Pageable pageable) {
         List<Long> ids = boardRepository.findIdsFromPaginationWithKeyword(boardSearchCondition, pageable);
-        List<CommentCountsWithBoardIdDto> countListAndBoardIdBulk = commentRepository.findCountListAndBoardIdBulk(ids);
+        List<BoardCommentCountProjection> countListAndBoardIdBulk = commentRepository.findCountListAndBoardIdBulk(ids);
 
-        Map<Long, CommentCountsWithBoardIdDto> boardIdWithCommentNumber = countListAndBoardIdBulk
+        Map<Long, BoardCommentCountProjection> boardIdWithCommentNumber = countListAndBoardIdBulk
                 .stream()
-                .collect(Collectors.toMap(CommentCountsWithBoardIdDto::getBoardId, Function.identity()));
+                .collect(Collectors.toMap(BoardCommentCountProjection::getId, Function.identity()));
 
         Page<Board> pageDataFromBoardByIds = boardRepository.findPageDataFromBoardByIds(ids, boardSearchCondition, pageable);
 
@@ -54,10 +55,10 @@ public class BoardAllService {
                 .build());
     }
 
-    private long commentCountFromCommentDto(CommentCountsWithBoardIdDto commentCountsWithBoardIdDto) {
-        if (commentCountsWithBoardIdDto == null) return 0L;
+    private long commentCountFromCommentDto(BoardCommentCountProjection boardCommentCountProjection) {
+        if (boardCommentCountProjection == null) return 0L;
 
-        return commentCountsWithBoardIdDto.getNumberOfComments();
+        return boardCommentCountProjection.getNumberOfComments();
     }
 
     public BoardDetailResponse getBoard(BoardType boardType, Long id) {

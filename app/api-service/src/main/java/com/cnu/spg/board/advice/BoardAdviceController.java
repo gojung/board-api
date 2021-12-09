@@ -1,9 +1,9 @@
 package com.cnu.spg.board.advice;
 
 import com.cnu.spg.board.exception.BoardNotFoundException;
-import com.cnu.spg.board.exception.BoardTypeNotMatchException;
+import com.cnu.spg.board.exception.BoardTypeNotValidException;
 import com.cnu.spg.board.exception.CategoryNotFoundException;
-import lombok.RequiredArgsConstructor;
+import com.cnu.spg.board.exception.CategoryOmittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class BoardAdviceController {
     /**
      * 404 Not Found
@@ -27,9 +26,9 @@ public class BoardAdviceController {
 
     /**
      * 400 Bad Request
-     * board type 정보 이슈
+     * 사용자 요청 이슈
      */
-    @ExceptionHandler(BoardTypeNotMatchException.class)
+    @ExceptionHandler({BoardTypeNotValidException.class, CategoryOmittedException.class})
     protected ResponseEntity<String> handleInvalidBoardTypeException(final RuntimeException exception) {
         log.error(exception.getMessage(), exception);
 

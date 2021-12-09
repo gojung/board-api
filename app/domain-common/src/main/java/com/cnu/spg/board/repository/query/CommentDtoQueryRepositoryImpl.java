@@ -1,7 +1,8 @@
 package com.cnu.spg.board.repository.query;
 
-import com.cnu.spg.board.dto.reponse.CommentCountsWithBoardIdDto;
-import com.querydsl.core.types.Projections;
+import com.cnu.spg.board.dto.projection.BoardCommentCountProjection;
+import com.cnu.spg.board.dto.projection.QBoardCommentCountProjection;
+import com.cnu.spg.config.querydsl.QuerydslOrderbyNull;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +24,13 @@ public class CommentDtoQueryRepositoryImpl implements CommentDtoQueryRepository 
     }
 
     @Override
-    public List<CommentCountsWithBoardIdDto> findCountListAndBoardIdBulk(List<Long> boardIdx) {
-        return queryFactory.select(
-                        Projections.constructor(CommentCountsWithBoardIdDto.class,
-                                comment.board.id, comment.count()
-                        ))
+    public List<BoardCommentCountProjection> findCountListAndBoardIdBulk(List<Long> boardIdx) {
+        return queryFactory
+                .select(new QBoardCommentCountProjection(comment.id, comment.count()))
                 .from(comment)
                 .where(inBoardId(boardIdx))
                 .groupBy(comment.board.id)
+                .orderBy(QuerydslOrderbyNull.DEFAULT)
                 .fetch();
     }
 }

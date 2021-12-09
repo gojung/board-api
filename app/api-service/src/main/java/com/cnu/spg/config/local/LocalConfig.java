@@ -2,7 +2,9 @@ package com.cnu.spg.config.local;
 
 import com.cnu.spg.board.domain.Board;
 import com.cnu.spg.board.domain.project.ProjectBoard;
+import com.cnu.spg.board.domain.project.ProjectCategory;
 import com.cnu.spg.board.repository.BoardRepository;
+import com.cnu.spg.board.repository.project.ProjectCategoryRepository;
 import com.cnu.spg.user.domain.Role;
 import com.cnu.spg.user.domain.RoleName;
 import com.cnu.spg.user.domain.User;
@@ -37,6 +39,7 @@ public class LocalConfig {
     private static class BoardLocalInitSerivce {
         private final UserRepository userRepository;
         private final BoardRepository boardRepository;
+        private final ProjectCategoryRepository categoryRepository;
 
         public void init() {
             String content = "content";
@@ -44,6 +47,11 @@ public class LocalConfig {
 
             User john = userRepository.findByUsername("john@gmail.com")
                     .orElseThrow(() -> new UsernameNotFoundException("not found"));
+            ProjectCategory category = categoryRepository.save(ProjectCategory.builder()
+                    .categoryName("category")
+                    .user(john)
+                    .build());
+
 
             for (int index = 0; index < 30; index++) {
                 String titleWithNum = title + "_" + index;
@@ -53,6 +61,7 @@ public class LocalConfig {
                         .user(john)
                         .title(titleWithNum)
                         .content(contentWithNum)
+                        .projectCategory(category)
                         .build();
 
                 boardRepository.save(board);

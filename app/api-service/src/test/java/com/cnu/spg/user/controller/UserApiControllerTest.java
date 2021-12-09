@@ -1,7 +1,7 @@
 package com.cnu.spg.user.controller;
 
 import com.cnu.spg.security.token.TokenProvider;
-import com.cnu.spg.user.dto.requset.UserRegisterDto;
+import com.cnu.spg.user.dto.requset.UserRegisterRequest;
 import com.cnu.spg.user.exception.RoleNotFoundException;
 import com.cnu.spg.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,17 +46,17 @@ class UserApiControllerTest {
     @DisplayName("회원 가입 성공 테스트")
     void registerTest() throws Exception {
         // given
-        UserRegisterDto userRegisterDto = UserRegisterDto.builder()
+        UserRegisterRequest userRegisterRequest = UserRegisterRequest.builder()
                 .userName("kkh@gmail.com")
                 .password("Abc123!")
                 .matchingPassword("Abc123!")
                 .name("kkh")
                 .build();
         willReturn(1L)
-                .given(userService).regiesterUser(any(UserRegisterDto.class));
+                .given(userService).regiesterUser(any(UserRegisterRequest.class));
 
         // when
-        String requestBodyStr = objectMapper.writeValueAsString(userRegisterDto);
+        String requestBodyStr = objectMapper.writeValueAsString(userRegisterRequest);
         ResultActions perform = mockMvc.perform(post("/api/v1/users")
                 .content(requestBodyStr)
                 .contentType(MediaType.APPLICATION_JSON));
@@ -79,10 +79,10 @@ class UserApiControllerTest {
     void registerFailDefaultRoleIsNotExistTest() throws Exception {
         // given
         willThrow(new RoleNotFoundException())
-                .given(userService).regiesterUser(any(UserRegisterDto.class));
+                .given(userService).regiesterUser(any(UserRegisterRequest.class));
 
         // when
-        String requestBodyStr = objectMapper.writeValueAsString(new UserRegisterDto("kkh@gmail.com", "Abc123!", "Abc123!", "kkh"));
+        String requestBodyStr = objectMapper.writeValueAsString(new UserRegisterRequest("kkh@gmail.com", "Abc123!", "Abc123!", "kkh"));
         ResultActions perform = mockMvc.perform(post("/api/v1/users")
                 .content(requestBodyStr)
                 .contentType(MediaType.APPLICATION_JSON));

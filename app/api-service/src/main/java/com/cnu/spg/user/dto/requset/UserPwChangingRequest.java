@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
         @FieldMatch(first = "password", second = "matchingPassword", message = "The password fields must match")
 })
 @Data
-public class UserPasswordChangingDto {
+public class UserPwChangingRequest {
     @NotNull(message = "is required")
     @Size(min = 1, message = "is required")
     private String beforePassword;
@@ -24,11 +24,11 @@ public class UserPasswordChangingDto {
     @Size(min = 1, message = "is required")
     private String matchingPassword;
 
-    public UserPasswordChangingDto() {
+    public UserPwChangingRequest() {
     }
 
     @Builder
-    public UserPasswordChangingDto(String beforePassword, String password, String matchingPassword) {
+    public UserPwChangingRequest(String beforePassword, String password, String matchingPassword) {
         this.beforePassword = beforePassword;
         this.password = password;
         this.matchingPassword = matchingPassword;

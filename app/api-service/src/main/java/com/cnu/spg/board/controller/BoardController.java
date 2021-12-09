@@ -1,17 +1,17 @@
 package com.cnu.spg.board.controller;
 
 import com.cnu.spg.board.domain.BoardType;
+import com.cnu.spg.board.dto.BoardDto;
 import com.cnu.spg.board.dto.condition.BoardSearchCondition;
 import com.cnu.spg.board.dto.condition.ProjectBoardCondition;
 import com.cnu.spg.board.dto.request.BoardTypeRequset;
 import com.cnu.spg.board.dto.request.BoardsRequset;
-import com.cnu.spg.board.dto.request.ProjectCategoryRequestDto;
+import com.cnu.spg.board.dto.request.CommentRequest;
 import com.cnu.spg.board.dto.response.BoardDetailResponse;
-import com.cnu.spg.board.dto.BoardDto;
-import com.cnu.spg.board.dto.response.CategoriesResponse;
 import com.cnu.spg.board.exception.BoardTypeNotMatchException;
-import com.cnu.spg.board.exception.NotExistBoardTypeException;
+import com.cnu.spg.board.exception.BoardTypeNotValidException;
 import com.cnu.spg.board.service.BoardAllService;
+import com.cnu.spg.board.service.CommentService;
 import com.cnu.spg.board.service.ProjectService;
 import com.cnu.spg.config.resolver.UserId;
 import com.cnu.spg.user.domain.User;
@@ -34,10 +34,11 @@ import java.net.URI;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class BoardApiController {
+public class BoardController {
 
     private final BoardAllService boardAllService;
     private final ProjectService projectService;
+    private final CommentService commentService;
 
     @ApiOperation("[권한] 전체 게시판 정보를 제공")
     @ApiImplicitParams({
@@ -58,7 +59,7 @@ public class BoardApiController {
     public ResponseEntity<Page<BoardDto>> findBoardByType(@PathVariable String boardType, @Valid BoardTypeRequset boardsRequset,
                                                           @PageableDefault(sort = "id", direction = Sort.Direction.DESC, size = 20) Pageable pageable) {
         BoardType boardTypeEnum = BoardType.findBoardTypeByKey(boardType)
-                .orElseThrow(NotExistBoardTypeException::new);
+                .orElseThrow(BoardTypeNotValidException::new);
 
         ProjectBoardCondition projectBoardCondition = new ProjectBoardCondition(boardsRequset.getPartOfContent(), boardsRequset.getWriterName(), boardsRequset.getPartOfContent());
         if (boardTypeEnum == BoardType.PROJECT) {
@@ -77,22 +78,18 @@ public class BoardApiController {
     @GetMapping("/api/v1/boards/{boardType}/{id}")
     public ResponseEntity<? extends BoardDetailResponse> getBoard(@PathVariable String boardType, @PathVariable("id") Long boardId) {
         BoardType boardTypeEnum = BoardType.findBoardTypeByKey(boardType)
-                .orElseThrow(NotExistBoardTypeException::new);
+                .orElseThrow(BoardTypeNotValidException::new);
         return ResponseEntity.ok().body(boardAllService.getBoard(boardTypeEnum, boardId));
     }
 
-    @ApiOperation("[권한] project board를 위한 category 정보 가져오기")
-    @GetMapping("/api/v1/boards/categories")
-    public ResponseEntity<CategoriesResponse> getAllJoinedCategories(@UserId User user) {
-        return ResponseEntity.ok(projectService.findAllUserCategories(user.getId()));
-    }
 
-    @ApiOperation("[권한] project category 추가")
-    @PostMapping("/api/v1/boards/categories")
-    public ResponseEntity<URI> createCategory(@UserId User user, @Valid @RequestBody ProjectCategoryRequestDto projectCategoryRequestDto) {
-        Long savedId = projectService.createProjectCategory(user, projectCategoryRequestDto.getCategoryName(), projectCategoryRequestDto.getParentCategoryId());
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(savedId).toUri();
+    @PostMapping("/api/v1/boards/comment")
+    public ResponseEntity<URI> createComment(@Valid @RequestBody CommentRequest commentRequest, @UserId User user) {
+        URI commentUri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(commentService.saveNewComment(commentRequest, user))
+                .toUri();
 
-        return ResponseEntity.created(uri).build();
+        return ResponseEntity.created(commentUri).build();
     }
 }

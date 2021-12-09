@@ -20,8 +20,8 @@ import java.util.Map;
 @Profile("replication")
 @Configuration
 @RequiredArgsConstructor
-@EnableTransactionManagement
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
+@EnableTransactionManagement
 @EnableJpaRepositories(basePackages = {"com.cnu.spg"})
 public class ReplicationDataSourceConfig {
     private final DataSourceKey dataSourceKey;
@@ -43,8 +43,11 @@ public class ReplicationDataSourceConfig {
     }
 
     @Bean
-    public DataSource routingDataSource(DataSource masterDataSource, DataSource slaveDataSource) {
+    public DataSource routingDataSource() {
         ReplicationRoutingDataSource routingDataSource = new ReplicationRoutingDataSource(dataSourceKey);
+
+        DataSource masterDataSource = masterDataSource();
+        DataSource slaveDataSource = slaveDataSource();
 
         Map<Object, Object> sources = Map.of(
                 dataSourceKey.getMasterKey(), masterDataSource,
@@ -60,6 +63,7 @@ public class ReplicationDataSourceConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
-        return new LazyConnectionDataSourceProxy(routingDataSource(masterDataSource(), slaveDataSource()));
+        return new LazyConnectionDataSourceProxy(routingDataSource());
     }
+
 }

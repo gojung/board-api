@@ -1,4 +1,4 @@
-package com.cnu.spg.board.dto.reponse;
+package com.cnu.spg.board.dto;
 
 import lombok.Data;
 
