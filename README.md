@@ -60,8 +60,6 @@ LeeJiHyeong - https://easybrother0103.tistory.com/30
 - [ ] JPA 성능 개선
 - [ ] 모니터링 도구 추가
 - [ ] 로그 적제 코드 추가
-- [ ] MSA 구조로 변경
-- [ ] Kafka 추가
 
 
 ### 구현 과정
@@ -71,9 +69,9 @@ LeeJiHyeong - https://easybrother0103.tistory.com/30
 
 ### 기능 요구 사항
 1. Board
-- [ ] board 생성
-- [ ] board 삭제
-- [ ] board 열람
+- [x] board 생성
+- [x] board 삭제
+- [x] board 열람
 - [x] pagination 열람
 - [ ] 수정
 - [ ] board 권한 동적 부여
