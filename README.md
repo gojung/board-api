@@ -3,6 +3,8 @@
 충남대학교 컴퓨터융합학부 학술동아리 SPG 홈페이지에서 시작해서 다른 기능을 구현 하고 있습니다
 (www.cnu-spg.com)
 
+![image](https://user-images.githubusercontent.com/19687080/147401191-228e7ad8-d3e3-4cec-a991-625efdcead21.png)
+
 서비스 운영중입니다. 19.09.04 ~ 21.02.08
 
 서버 비용 문제로 서비스 중단중입니다.
